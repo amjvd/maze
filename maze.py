@@ -3,6 +3,8 @@ from button import *
 import pygame
 import pygame._sdl2 as sdl2
 import sys
+import random
+import time
 pygame.init() 
 
 class MazeGame:                     #Maze class that will be called when user presses Maze on mainpage
@@ -14,6 +16,15 @@ class MazeGame:                     #Maze class that will be called when user pr
         self.screen = pygame.display.set_mode(self.screenSize)    #setting screen dimensions
         self.window = sdl2.Window.from_display_module()
         self.player = pygame.image.load(r'Images\guy.png').convert_alpha()    #Setting player image that will move on screen
+        self.enemy = pygame.image.load(r'Images\enemy.png').convert_alpha()
+        self.heart1 = pygame.image.load(r'Images\heart.png').convert_alpha()
+        self.heart2 = pygame.image.load(r'Images\heart.png').convert_alpha()
+        self.heart3 = pygame.image.load(r'Images\heart.png').convert_alpha()
+        self.emptyHeart = pygame.image.load(r'Images\emptyHeart.png').convert_alpha()
+        self.hearts = 3
+        self.delay, self.enemyDelay = 320,0
+
+        
 
     def font(self, size):
         return pygame.font.SysFont("Cambria", size)
@@ -22,10 +33,20 @@ class MazeGame:                     #Maze class that will be called when user pr
     def run(self):
         self.imageSize = [self.screenSize[0]/self.x, self.screenSize[1]/self.y]
         self.level = Level(self.y, self.x, self.screenSize, self.imageSize)
-        self.pos =  [0,self.level.entrance]
+        self.playerPos =  [0,self.level.entrance]
+        self.enemyPos = [self.y-3,self.level.exit]
         
+
         self.player = pygame.transform.scale(self.player,(self.imageSize))
+        self.enemy = pygame.transform.scale(self.enemy,(self.imageSize))
+        self.heart1 = pygame.transform.scale (self.heart1,(48,48))
+        self.heart2 = pygame.transform.scale (self.heart2,(48,48))
+        self.heart3 = pygame.transform.scale (self.heart3,(48,48))
+
+
         while True:                                             
+            self.time = pygame.time.get_ticks()
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:                       #If screen is closed pygame stops running and program stops
                     pygame.quit()                                   
@@ -35,22 +56,68 @@ class MazeGame:                     #Maze class that will be called when user pr
             
             self.screen.fill((0,0,0))                               #fills screen to white at the start of each iteration to clear any previous unwated images
             self.screen.blit(self.level.map, (0, 0))                #draws level surface on our display
-            self.screen.blit(self.player,(self.pos[1] * (self.imageSize[0]), self.pos[0] * (self.imageSize[1])))  #draws player image where our pos variable is and *32 to get display coordinates
+            self.screen.blit(self.player,(self.playerPos[1] * (self.imageSize[0]), self.playerPos[0] * (self.imageSize[1])))  #draws player image where our pos variable is and *32 to get display coordinates
+            self.screen.blit(self.enemy,(self.enemyPos[1] * self.imageSize[0], self.enemyPos[0] * self.imageSize[1]))
+            self.screen.blit(self.heart1,(0 * 48, 0 * 48))
+            self.screen.blit(self.heart2,(1 * 48, 0 * 48))
+            self.screen.blit(self.heart3,(2 * 48, 0 * 48))
+
             key = pygame.key.get_pressed()                 #set variable to store key pressed
-            if self.level.mazeLevel[self.pos[0]][self.pos[1]]  == "3":    #Check to see if our position is on end square
+            if self.playerPos == self.enemyPos:
+                self.hearts -= 1
+                if self.hearts == 2:
+                    self.heart3 = self.emptyHeart
+                    
+                    self.run()
+                elif self.hearts ==1:
+                    self.heart2 = self.emptyHeart
+                
+                    self.run()
+
+            directions = ["up","down","left","right"]
+            
+            
+            
+            if self.time > self.enemyDelay:
+                for i in directions:
+                    i = random.choice(directions)
+                
+                    if i == "up" and self.level.mazeLevel[self.enemyPos[0]-1][self.enemyPos[1]]  != "1" :
+                        if self.level.mazeLevel[self.enemyPos[0]-1][self.enemyPos[1]]  != "2":
+                            self.enemyPos[0] -= 1
+                            self.enemyDelay += self.delay
+
+                        
+                            
+                    elif i == "down" and self.level.mazeLevel[self.enemyPos[0]+1][self.enemyPos[1]]  != "1":
+                        if self.level.mazeLevel[self.enemyPos[0]+1][self.enemyPos[1]]  != "3":
+                            self.enemyPos[0] += 1
+                            self.enemyDelay += self.delay
+                    
+                    elif i == "left" and self.level.mazeLevel[self.enemyPos[0]][self.enemyPos[1]-1]  != "1" :                 
+                        self.enemyPos[1] -= 1
+                        self.enemyDelay += self.delay
+                    
+                    elif i == "right" and self.level.mazeLevel[self.enemyPos[0]][self.enemyPos[1]+1]  != "1" :
+                        self.enemyPos[1] += 1
+                        self.enemyDelay += self.delay
+
+            
+
+            if self.level.mazeLevel[self.playerPos[0]][self.playerPos[1]]  == "3":    #Check to see if our position is on end square 
                 self.run()
             if key[pygame.K_a]:                                                     #Check what key was pressed and if possible to move in that direction (no walls in way)
-                if self.level.mazeLevel[self.pos[0]][self.pos[1]-1]  != "1" :                 
-                    self.pos[1] -= 1
+                if self.level.mazeLevel[self.playerPos[0]][self.playerPos[1]-1]  != "1" :                 
+                    self.playerPos[1] -= 1
             elif key[pygame.K_d]:
-                if self.level.mazeLevel[self.pos[0]][self.pos[1]+1]  != "1" :
-                    self.pos[1] += 1
+                if self.level.mazeLevel[self.playerPos[0]][self.playerPos[1]+1]  != "1" :
+                    self.playerPos[1] += 1
             elif key[pygame.K_w]:
-                if self.level.mazeLevel[self.pos[0]-1][self.pos[1]]  != "1" :
-                    self.pos[0] -= 1
+                if self.level.mazeLevel[self.playerPos[0]-1][self.playerPos[1]]  != "1" :
+                    self.playerPos[0] -= 1
             elif key[pygame.K_s]: 
-                if self.level.mazeLevel[self.pos[0]+1][self.pos[1]]  != "1" :
-                    self.pos[0] += 1
+                if self.level.mazeLevel[self.playerPos[0]+1][self.playerPos[1]]  != "1" :
+                    self.playerPos[0] += 1
 
 
             pygame.display.update()                                         #update display after everything is done
@@ -180,5 +247,7 @@ class MazeGame:                     #Maze class that will be called when user pr
             self.clock.tick(32)
 
 
+
 maze = MazeGame()
 maze.mainMenu()
+

@@ -65,7 +65,7 @@ class LevelGen(object):                       #declaring LevelGen class to carry
             randomWall = self.walls[random.randint(0, len(self.walls)-1)]                  #Pick random wall
                 
             if randomWall[1] != 0:                                                      #If random wall is LEFT WALL and if space to left still hasnt been converted from 4
-                if self.level[randomWall[0]][randomWall[1]-1] == 4 and self.level[randomWall[0]][randomWall[1]+1] == 1:
+                if self.level[randomWall[0]][randomWall[1]-1] == 2 and self.level[randomWall[0]][randomWall[1]+1] == 1:
                     self.emptySpace = self.surroundingSpace(randomWall)   #surronding space of specfic random wall
                     if self.emptySpace < 2:                         
                         self.level[randomWall[0]][randomWall[1]] = 0 #If theres less than 2 surronding space turn wall into empty space in level (path)

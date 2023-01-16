@@ -5,7 +5,30 @@ class Level:                                                                    
     
     def __init__(self, y, x, screenSize, imageSize):
         self.mazeLevel = LevelGen(y,x).createLevel()
+        count = 0
+        for i in range(y):
+            numWalls = self.mazeLevel[i].count(1)
+            count += numWalls
+                
+                
+        print(count)
+        while count > y * (x-5) :
+            print(count)
+            count = 0
+            self.mazeLevel = LevelGen(y,x).createLevel()
+            for i in range(y):
+                numWalls = self.mazeLevel[i].count(1)
+                count += numWalls
+            if count < y*(x-5):
+                break
+
+
+        #return self.mazeLevel
+
         self.entrance  = self.mazeLevel[0].index(2)
+        self.exit = self.mazeLevel[y-1].index(3)
+        
+        
 
         
         
