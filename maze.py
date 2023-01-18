@@ -5,7 +5,10 @@ import pygame._sdl2 as sdl2
 import sys
 import random
 import time
+import  pyodbc
 pygame.init() 
+conn_str = (r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
+            r'DBQ=.\Database\data.accdb;')  
 
 class MazeGame:                     #Maze class that will be called when user presses Maze on mainpage
 
@@ -23,6 +26,7 @@ class MazeGame:                     #Maze class that will be called when user pr
         self.emptyHeart = pygame.image.load(r'Images\emptyHeart.png').convert_alpha()
         self.hearts = 3
         self.delay, self.enemyDelay = 320,0
+
 
         
 
@@ -105,7 +109,7 @@ class MazeGame:                     #Maze class that will be called when user pr
             
 
             if self.level.mazeLevel[self.playerPos[0]][self.playerPos[1]]  == "3":    #Check to see if our position is on end square 
-                self.run()
+                self.question()
             if key[pygame.K_a]:                                                     #Check what key was pressed and if possible to move in that direction (no walls in way)
                 if self.level.mazeLevel[self.playerPos[0]][self.playerPos[1]-1]  != "1" :                 
                     self.playerPos[1] -= 1
@@ -240,14 +244,60 @@ class MazeGame:                     #Maze class that will be called when user pr
                         self.settings()
                     if backButton.checkForInput(mousePos):
                         pygame.quit()
-                        sys.exit()
+                        #sys.exit()
+                        return
 
 
             pygame.display.update()
             self.clock.tick(32)
 
+    def question(self):
+        conn = pyodbc.connect(conn_str)
+        cursor = conn.cursor()                                   #opens database
+        cursor.execute('SELECT * From mathsQuestions')
+
+        record = cursor.fetchall()
+        conn.close()                                            #closes database
+
+        uname = ""                                              #creates new variables to be used to save database info 
+        pword = ""
+        name = ""
+
+        for i in record:                                        #sets name variable to first field which is name field, uname variable to the second field in the database which is the username field, and sets pword to the third field which is password field
+            question = [random.randit(0,2)][0]
+            uname = row[2]
+            pword = row[3]
+
+        userAnswer = ''
+        answerBox = pygame.Rect(200,200,140,32)
+
+
+
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_BACKSPACE:
+                        answer = answer[0:-1]
+                    else:
+                        answer += event.unicode
+
+                                
+
+            self.screen.fill((0, 0, 0))
+            pygame.draw.rect(self.screen,(255,255,255),answerBox,2)
+            answerSurface = self.font(32).render(answer,True,(255,255,255))
+            self.screen.blit(answerSurface,(answerBox.x, answerBox.y))
+
+            pygame.display.update()
+            self.clock.tick(32)
+        
 
 
 maze = MazeGame()
-maze.mainMenu()
+maze.question()
+
 

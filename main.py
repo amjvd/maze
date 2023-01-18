@@ -264,6 +264,7 @@ class homeWindow(QtWidgets.QMainWindow):
 		homePage.hide()
 		maze = MazeGame()
 		maze.mainMenu()
+		homePage.show( )
 		
 				
 
