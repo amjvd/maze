@@ -25,6 +25,7 @@ class MazeGame:                     #Maze class that will be called when user pr
         self.heart3 = pygame.image.load(r'Images\heart.png').convert_alpha()
         self.emptyHeart = pygame.image.load(r'Images\emptyHeart.png').convert_alpha()
         self.hearts = 3
+        self.score = 0
         self.delay, self.enemyDelay = 320,0
 
 
@@ -71,12 +72,15 @@ class MazeGame:                     #Maze class that will be called when user pr
                 self.hearts -= 1
                 if self.hearts == 2:
                     self.heart3 = self.emptyHeart
-                    
                     self.run()
+                
                 elif self.hearts ==1:
                     self.heart2 = self.emptyHeart
-                
                     self.run()
+                
+                else:
+                    self.heart1 = self.emptyHeart
+                    self.gameOver()
 
             directions = ["up","down","left","right"]
             
@@ -258,18 +262,19 @@ class MazeGame:                     #Maze class that will be called when user pr
 
         record = cursor.fetchall()
         conn.close()                                            #closes database
+        randomNum = random.randint(0,len(record)-1)
+       
 
-        uname = ""                                              #creates new variables to be used to save database info 
-        pword = ""
-        name = ""
+    
 
-        for i in record:                                        #sets name variable to first field which is name field, uname variable to the second field in the database which is the username field, and sets pword to the third field which is password field
-            question = [random.randit(0,2)][0]
-            uname = row[2]
-            pword = row[3]
+                                           
+        question = record[randomNum][1]
+        answer = record[randomNum][2]
+            
 
         userAnswer = ''
         answerBox = pygame.Rect(200,200,140,32)
+        questionBox = pygame.Rect(100,100,140,32)
 
 
 
@@ -281,23 +286,47 @@ class MazeGame:                     #Maze class that will be called when user pr
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_BACKSPACE:
-                        answer = answer[0:-1]
+                        userAnswer = userAnswer[0:-1]
+                    elif event.key == pygame.K_RETURN:
+                        if userAnswer == answer:
+                            self.score +=1 
+                            print(self.score)
+                            self.run()
                     else:
-                        answer += event.unicode
+                        userAnswer += event.unicode
 
                                 
 
-            self.screen.fill((0, 0, 0))
+            self.screen.fill((234,210,168))
             pygame.draw.rect(self.screen,(255,255,255),answerBox,2)
-            answerSurface = self.font(32).render(answer,True,(255,255,255))
+            pygame.draw.rect(self.screen,(255,255,255),questionBox,2)
+            answerSurface = self.font(32).render(userAnswer,True,(255,255,255))
+            questionSurface = self.font(32).render(question,True,(255,255,255))
             self.screen.blit(answerSurface,(answerBox.x, answerBox.y))
+            self.screen.blit(questionSurface,(questionBox))
 
             pygame.display.update()
             self.clock.tick(32)
-        
+
+    def gameOver(self):
+
+        gameSurf = self.font(150).render('Game', True,(255,255,255))
+        overSurf = self.font(150).render('Over', True,(255,255,255))
+        gameRect = gameSurf.get_rect()
+        overRect = overSurf.get_rect()
+        gameRect.midtop = (self.screenSize[1] / 2, 10)
+        overRect.midtop = (self.screenSize[1] / 2, gameRect.height + 10 + 25)
+        self.screen.blit(gameSurf, gameRect)
+        self.screen.blit(overSurf, overRect)
+        pygame.display.update()
+        pygame.time.wait(10000)
+     
+
+
+            
 
 
 maze = MazeGame()
-maze.question()
+maze.mainMenu()
 
 
